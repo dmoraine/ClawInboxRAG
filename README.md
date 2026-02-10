@@ -18,6 +18,32 @@ It gives agents a consistent way to query inbox data with practical defaults, bo
 - Gmail OAuth token with read-only scope.
 - Local mailbox/index data initialized for your retrieval mode.
 
+## Google OAuth (Read-Only, Recommended)
+
+ClawInboxRAG is designed for mailbox retrieval, not mailbox mutation.
+
+Use Gmail OAuth with **read-only scope**:
+
+- `https://www.googleapis.com/auth/gmail.readonly`
+
+Avoid write scopes unless you intentionally need write actions in another tool:
+
+- `gmail.modify`
+- `gmail.send`
+- `mail.google.com`
+
+### Why this matters
+
+- Limits blast radius if token is leaked.
+- Keeps behavior aligned with this skill's safety model.
+- Simplifies compliance and auditing.
+
+### Practical checks
+
+- Verify token file permissions are restrictive (`600` where possible).
+- Keep token outside the repository.
+- If uncertain about granted scopes, re-run OAuth with read-only only.
+
 ## Installation
 
 1. Clone this repository.
@@ -45,6 +71,23 @@ scripts/run_cli.sh labels
 ```text
 mail <query> [keyword|semantic|hybrid] [max N|top N|limit N] [label <prefix>] [after <date>] [before <date>] [between <date> and <date>] [resume]
 ```
+
+### Syntax quick reference
+
+- Search: `mail <query>`
+- Mode: `keyword` | `semantic` | `hybrid`
+- Result size: `max N` / `top N` / `limit N`
+- Labels: `label <prefix>`
+- Date window:
+  - `after <date>`
+  - `before <date>`
+  - `between <date> and <date>`
+- Summary mode: `resume`
+- Ops commands:
+  - `mail recents [top N]`
+  - `mail status`
+  - `mail labels`
+  - `mail sync`
 
 Supported date formats:
 
