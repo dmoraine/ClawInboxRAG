@@ -2,9 +2,9 @@
 
 ## 1) Required components
 
-- Local `gmail-rag` checkout
-- Python + `uv`
-- Gmail OAuth token with read-only scope
+- Local `gmail-rag` checkout.
+- Python + `uv`.
+- Gmail OAuth token with read-only scope.
 
 ## 2) Environment variables
 
@@ -16,12 +16,14 @@ export MAIL_DEFAULT_LIMIT="5"
 export MAIL_MAX_LIMIT="25"
 ```
 
+`GMAIL_RAG_REPO` is required by `scripts/run_cli.sh`.
+
 ## 3) Basic health checks
 
 ```bash
-cd "$GMAIL_RAG_REPO"
-$GMAIL_RAG_UV_BIN run python -m gmail_rag.cli status
-$GMAIL_RAG_UV_BIN run python -m gmail_rag.cli labels
+scripts/run_cli.sh status
+scripts/run_cli.sh labels
+python3 scripts/parse_mail.py "mail invoices max 3"
 ```
 
-If semantic/hybrid is intended, ensure embeddings/index exist before production usage.
+If semantic/hybrid retrieval is expected, ensure embeddings/index exist.

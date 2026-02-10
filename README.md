@@ -1,0 +1,110 @@
+# ClawInboxRAG
+
+ClawInboxRAG is a community skill that turns natural-language `mail ...` prompts into safe, structured commands for a local `gmail-rag` installation.
+
+It gives agents a consistent way to query inbox data with practical defaults, bounded output, and read-only safety constraints.
+
+## Value Proposition
+
+- Fast mailbox retrieval from chat-style commands.
+- Portable skill design with minimal environment assumptions.
+- Safety-first execution: read-only Gmail scope, command allowlist, bounded results.
+- Works with keyword, semantic, or hybrid retrieval modes (as supported by your `gmail-rag` setup).
+
+## Prerequisites
+
+- Local checkout of `gmail-rag` (with working CLI).
+- Python environment with `uv` (or compatible runner).
+- Gmail OAuth token with read-only scope.
+- Local mailbox/index data initialized for your retrieval mode.
+
+## Installation
+
+1. Clone this repository.
+2. Set required environment variables:
+
+```bash
+export GMAIL_RAG_REPO="/absolute/path/to/gmail-rag"
+export GMAIL_RAG_UV_BIN="uv"
+export MAIL_DEFAULT_MODE="hybrid"   # keyword|semantic|hybrid
+export MAIL_DEFAULT_LIMIT="5"
+export MAIL_MAX_LIMIT="25"
+```
+
+3. Validate connectivity:
+
+```bash
+scripts/run_cli.sh status
+scripts/run_cli.sh labels
+```
+
+## Usage
+
+### Core command shape
+
+```text
+mail <query> [keyword|semantic|hybrid] [max N|top N|limit N] [label <prefix>] [after <date>] [before <date>] [between <date> and <date>] [resume]
+```
+
+Supported date formats:
+
+- `YYYY`
+- `MM/YYYY`
+- `YYYY-MM`
+- `YYYY-MM-DD`
+
+### Examples
+
+```text
+mail conference
+mail budget review keyword max 8
+mail invoices label finance/receivables between 2025-01 and 2025-03 resume
+mail recents top 10
+mail status
+mail labels
+mail sync
+```
+
+### Sender/recipient filtering
+
+The parser does not implement dedicated `from`/`to` flags. Use provider query operators inside `<query>` when your backend supports them, for example:
+
+```text
+mail from:alice@example.com to:me subject:contract max 5
+```
+
+## Safety Model
+
+- Read-only Gmail access only.
+- Wrapper allowlists CLI subcommands: `search`, `recents`, `status`, `labels`, `ingest-primary`, `embed`, `refresh-labels`.
+- Numeric limits are clamped to `MAIL_MAX_LIMIT`.
+- Dates are parsed and normalized before command execution.
+- Do not return full raw message bodies or secrets in default responses.
+
+## Troubleshooting
+
+- `GMAIL_RAG_REPO is not set`: export `GMAIL_RAG_REPO` to a valid `gmail-rag` checkout.
+- `runner not found in PATH`: install `uv` or set `GMAIL_RAG_UV_BIN` correctly.
+- `ModuleNotFoundError: gmail_rag`: verify your repo path and Python environment.
+- Sparse semantic/hybrid results: run `mail sync` (or explicit embedding flow) and retry.
+
+More: `references/troubleshooting.md`.
+
+## Roadmap
+
+- Add lightweight parser tests for high-confidence command normalization.
+- Add optional structured output mode (JSON) for downstream tooling.
+- Document backend-specific query operator compatibility (`from:`, `to:`, `subject:`).
+- Prepare ClawHub metadata and release artifacts (without auto-publishing).
+
+## Repository Layout
+
+- `SKILL.md` - community skill specification.
+- `scripts/parse_mail.py` - parser for `mail ...` commands.
+- `scripts/run_cli.sh` - safe wrapper for `gmail-rag` CLI execution.
+- `references/` - setup, commands, security, troubleshooting notes.
+- `docs/RELEASE_CHECKLIST.md` - pre-publish release checklist.
+
+## License
+
+MIT. See `LICENSE`.

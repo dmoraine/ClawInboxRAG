@@ -1,22 +1,33 @@
 # Troubleshooting
 
+## `ERROR: GMAIL_RAG_REPO is not set`
+
+- Export `GMAIL_RAG_REPO` to your local `gmail-rag` path.
+
+## `ERROR: GMAIL_RAG_REPO does not exist`
+
+- Verify the path is correct and readable.
+
+## `ERROR: runner not found in PATH`
+
+- Install `uv` or set `GMAIL_RAG_UV_BIN` to the correct executable.
+
 ## `ModuleNotFoundError: gmail_rag`
 
-- Verify repository path and virtual environment setup.
-- Confirm command is executed from the configured repository.
+- Check repository path and environment setup.
+- Confirm CLI runs in the configured `gmail-rag` checkout.
 
 ## OAuth/auth failures
 
-- Confirm token exists and has valid Gmail read-only scopes.
-- Re-authenticate if token is expired/revoked.
+- Confirm token exists and has Gmail read-only scope.
+- Re-authenticate if token is expired or revoked.
 
-## Empty semantic results
+## Empty semantic/hybrid results
 
-- Check embedding pipeline status.
-- Run ingest/embed maintenance (`mail sync`) and retry.
+- Run maintenance (`mail sync`) and retry.
+- Fall back to `keyword` mode for exact-match validation.
 
 ## Slow responses
 
-- Reduce result limits.
-- Use keyword mode for quick exact-match checks.
-- Perform periodic index maintenance.
+- Lower `max/top/limit` values.
+- Prefer keyword mode for narrow exact-match searches.
