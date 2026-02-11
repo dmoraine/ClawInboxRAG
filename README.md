@@ -44,6 +44,97 @@ Avoid write scopes unless you intentionally need write actions in another tool:
 - Keep token outside the repository.
 - If uncertain about granted scopes, re-run OAuth with read-only only.
 
+### Step-by-step OAuth on VPS (credentials.json -> token.json)
+
+This is the concrete flow used in practice for a headless VPS setup.
+
+1. **Create OAuth client in Google Cloud**
+   - Enable **Gmail API** in your project.
+   - Configure OAuth consent screen (add your account as a test user if app is in testing mode).
+   - Create OAuth Client ID as **Desktop app**.
+   - Download client credentials JSON.
+
+2. **Place credentials on server**
+
+```bash
+mkdir -p /home/openclaw/.openclaw/gmail
+chmod 700 /home/openclaw/.openclaw/gmail
+# copy downloaded file to:
+# /home/openclaw/.openclaw/gmail/credentials.json
+chmod 600 /home/openclaw/.openclaw/gmail/credentials.json
+```
+
+3. **Use a local uv environment (recommended)**
+
+```bash
+cd /home/openclaw/.openclaw/gmail
+uv venv
+uv pip install -U google-auth-oauthlib google-api-python-client
+```
+
+4. **Create auth script** (`/home/openclaw/.openclaw/gmail/auth_gmail.py`)
+
+```python
+from google_auth_oauthlib.flow import InstalledAppFlow
+import os
+
+SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
+BASE = "/home/openclaw/.openclaw/gmail"
+CREDS = os.path.join(BASE, "credentials.json")
+TOKEN = os.path.join(BASE, "token.json")
+
+def main():
+    flow = InstalledAppFlow.from_client_secrets_file(CREDS, SCOPES)
+    creds = flow.run_local_server(host="127.0.0.1", port=8088, open_browser=False)
+    with open(TOKEN, "w") as f:
+        f.write(creds.to_json())
+    os.chmod(TOKEN, 0o600)
+    print("OK: token written to", TOKEN)
+
+if __name__ == "__main__":
+    main()
+```
+
+> Note: some environments do not expose `run_console()`; `run_local_server()` is more broadly compatible.
+
+5. **Run script on VPS**
+
+```bash
+cd /home/openclaw/.openclaw/gmail
+uv run python auth_gmail.py
+```
+
+6. **Tunnel callback from your laptop to VPS** (keep this open while authenticating)
+
+```bash
+ssh -L 8088:127.0.0.1:8088 <your-vps-host>
+```
+
+7. **Open Google consent URL, approve access**
+   - The callback hits `http://127.0.0.1:8088/` on your laptop.
+   - SSH tunnel forwards callback to VPS auth script.
+   - Script writes `/home/openclaw/.openclaw/gmail/token.json`.
+
+8. **Verify token exists**
+
+```bash
+ls -la /home/openclaw/.openclaw/gmail/token.json
+```
+
+9. **Optional smoke test (read-only)**
+
+```python
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+
+creds = Credentials.from_authorized_user_file(
+    "/home/openclaw/.openclaw/gmail/token.json",
+    ["https://www.googleapis.com/auth/gmail.readonly"],
+)
+service = build("gmail", "v1", credentials=creds)
+print(service.users().messages().list(userId="me", maxResults=5).execute())
+```
+
 ## Installation
 
 1. Clone this repository.
