@@ -2,7 +2,7 @@
 
 **Local Gmail RAG + `mail ...` skill wrapper in one repo.**
 
-ClawInboxRAG is the polished home for the local Gmail retrieval system used by OpenClaw fans.
+ClawInboxRAG is the home for the local Gmail retrieval system used by OpenClaw fans.
 It combines the retrieval engine, the chat-friendly skill layer, tests, docs, and operational scripts.
 
 ## What you get
@@ -14,7 +14,7 @@ It combines the retrieval engine, the chat-friendly skill layer, tests, docs, an
 - `tests/` — regression coverage
 - `references/` — setup, commands, security, troubleshooting
 
-## Why this repo is nice
+## Why this repo exists
 
 - One source of truth for behavior and safety
 - Read-only Gmail posture by default
@@ -25,6 +25,7 @@ It combines the retrieval engine, the chat-friendly skill layer, tests, docs, an
 ## Quick start
 
 ```bash
+uv sync --extra dev
 export GMAIL_RAG_REPO="/absolute/path/to/claw-inbox-rag"
 export GMAIL_RAG_UV_BIN="uv"
 export MAIL_DEFAULT_MODE="hybrid"

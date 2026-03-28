@@ -1,0 +1,23 @@
+[project]
+name = "claw-inbox-rag"
+version = "0.1.0"
+description = "ClawInboxRAG: local Gmail RAG engine plus community skill wrapper"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "faiss-cpu>=1.13.2",
+    "google-api-python-client>=2.189.0",
+    "google-auth-httplib2>=0.3.0",
+    "google-auth-oauthlib>=1.2.4",
+    "lxml>=6.0.2",
+    "pydantic>=2.12.5",
+    "python-docx>=1.2.0",
+    "sentence-transformers>=5.2.2",
+    "tqdm>=4.67.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.4.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
