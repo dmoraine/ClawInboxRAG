@@ -1,12 +1,12 @@
-# ClawHub Release Checklist (Pre-Publish)
+# ClawInboxRAG Release Checklist (Pre-Publish)
 
 Use this checklist before publishing ClawInboxRAG to ClawHub.
 
 ## Product Readiness
 
-- [ ] `README.md` explains value proposition, setup, usage, safety, troubleshooting, roadmap.
-- [ ] `SKILL.md` is consistent with actual scripts and uses `ClawInboxRAG` naming.
-- [ ] `references/` docs match parser and CLI behavior.
+- [ ] `README.md` clearly explains the repo, quick start, usage, and safety model.
+- [ ] `SKILL.md` uses ClawInboxRAG naming and matches actual scripts.
+- [ ] `references/` match the parser and CLI behavior.
 
 ## Safety and Compliance
 
