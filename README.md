@@ -1,102 +1,49 @@
 # ClawInboxRAG
 
-ClawInboxRAG is a community skill that turns natural-language `mail ...` prompts into safe, structured commands for a local `gmail-rag` installation.
+**Local Gmail RAG + `mail ...` skill wrapper in one repo.**
 
-It gives agents a consistent way to query inbox data with practical defaults, bounded output, and read-only safety constraints.
+ClawInboxRAG is the home for the local Gmail retrieval system used by OpenClaw fans.
+It combines the retrieval engine, the chat-friendly skill layer, tests, docs, and operational scripts.
 
-## Value Proposition
+## What you get
 
-- Fast mailbox retrieval from chat-style commands.
-- Portable skill design with minimal environment assumptions.
-- Safety-first execution: read-only Gmail scope, command allowlist, bounded results.
-- Works with keyword, semantic, or hybrid retrieval modes (as supported by your `gmail-rag` setup).
+- `gmail_rag/` — ingest, embed, search
+- `clawinboxrag/` — skill adapter and parity harness
+- `scripts/` — active wrapper scripts
+- `packages/gmail-rag-legacy/` — archived legacy snapshot
+- `tests/` — regression coverage
+- `references/` — setup, commands, security, troubleshooting
 
-## Prerequisites
+## Why this repo exists
 
-- Local checkout of `gmail-rag` (with working CLI).
-- Python environment with `uv` (or compatible runner).
-- Gmail OAuth token with read-only scope.
-- Local mailbox/index data initialized for your retrieval mode.
+- One source of truth for behavior and safety
+- Read-only Gmail posture by default
+- `mail ...` command language for chat surfaces
+- Hybrid search with keyword + semantic retrieval
+- Easy to browse, test, and extend
 
-## Google OAuth (Read-Only, Recommended)
-
-ClawInboxRAG is designed for mailbox retrieval, not mailbox mutation.
-
-Use Gmail OAuth with **read-only scope**:
-
-- `https://www.googleapis.com/auth/gmail.readonly`
-
-Avoid write scopes unless you intentionally need write actions in another tool:
-
-- `gmail.modify`
-- `gmail.send`
-- `mail.google.com`
-
-### Why this matters
-
-- Limits blast radius if token is leaked.
-- Keeps behavior aligned with this skill's safety model.
-- Simplifies compliance and auditing.
-
-### Practical checks
-
-- Verify token file permissions are restrictive (`600` where possible).
-- Keep token outside the repository.
-- If uncertain about granted scopes, re-run OAuth with read-only only.
-
-## Installation
-
-1. Clone this repository.
-2. Set required environment variables:
+## Quick start
 
 ```bash
-export GMAIL_RAG_REPO="/absolute/path/to/gmail-rag"
+uv sync --extra dev
+export GMAIL_RAG_REPO="/absolute/path/to/claw-inbox-rag"
 export GMAIL_RAG_UV_BIN="uv"
-export MAIL_DEFAULT_MODE="hybrid"   # keyword|semantic|hybrid
+export MAIL_DEFAULT_MODE="hybrid"
 export MAIL_DEFAULT_LIMIT="5"
 export MAIL_MAX_LIMIT="25"
-```
 
-3. Validate connectivity:
-
-```bash
 scripts/run_cli.sh status
 scripts/run_cli.sh labels
+scripts/run_cli.sh search "invoice" --hybrid --limit 5
 ```
 
-## Usage
-
-### Core command shape
+## Command language
 
 ```text
 mail <query> [keyword|semantic|hybrid] [max N|top N|limit N] [label <prefix>] [after <date>] [before <date>] [between <date> and <date>] [resume]
 ```
 
-### Syntax quick reference
-
-- Search: `mail <query>`
-- Mode: `keyword` | `semantic` | `hybrid`
-- Result size: `max N` / `top N` / `limit N`
-- Labels: `label <prefix>`
-- Date window:
-  - `after <date>`
-  - `before <date>`
-  - `between <date> and <date>`
-- Summary mode: `resume`
-- Ops commands:
-  - `mail recents [top N]`
-  - `mail status`
-  - `mail labels`
-  - `mail sync`
-
-Supported date formats:
-
-- `YYYY`
-- `MM/YYYY`
-- `YYYY-MM`
-- `YYYY-MM-DD`
-
-### Examples
+Examples:
 
 ```text
 mail conference
@@ -108,46 +55,26 @@ mail labels
 mail sync
 ```
 
-### Sender/recipient filtering
+## Read-only safety
 
-The parser does not implement dedicated `from`/`to` flags. Use provider query operators inside `<query>` when your backend supports them, for example:
+- Gmail access stays read-only.
+- No send/delete operations in this skill.
+- Result counts are clamped.
+- Tokens and secrets stay out of the repo.
+- Wrapper commands are allowlisted.
 
-```text
-mail from:alice@example.com to:me subject:contract max 5
-```
+## Repository layout
 
-## Safety Model
+- `gmail_rag/` — core engine and CLI code
+- `clawinboxrag/` — skill adapter and parity harness
+- `scripts/` — helper scripts
+- `packages/gmail-rag-legacy/` — preserved legacy Gmail RAG snapshot
+- `tests/` — automated tests
+- `references/` — setup, commands, security, troubleshooting notes
+- `docs/` — migration and validation docs
 
-- Read-only Gmail access only.
-- Wrapper allowlists CLI subcommands: `search`, `recents`, `status`, `labels`, `ingest-primary`, `embed`, `refresh-labels`.
-- Numeric limits are clamped to `MAIL_MAX_LIMIT`.
-- Dates are parsed and normalized before command execution.
-- Do not return full raw message bodies or secrets in default responses.
+## Compatibility notes
 
-## Troubleshooting
-
-- `GMAIL_RAG_REPO is not set`: export `GMAIL_RAG_REPO` to a valid `gmail-rag` checkout.
-- `runner not found in PATH`: install `uv` or set `GMAIL_RAG_UV_BIN` correctly.
-- `ModuleNotFoundError: gmail_rag`: verify your repo path and Python environment.
-- Sparse semantic/hybrid results: run `mail sync` (or explicit embedding flow) and retry.
-
-More: `references/troubleshooting.md`.
-
-## Roadmap
-
-- Add lightweight parser tests for high-confidence command normalization.
-- Add optional structured output mode (JSON) for downstream tooling.
-- Document backend-specific query operator compatibility (`from:`, `to:`, `subject:`).
-- Prepare ClawHub metadata and release artifacts (without auto-publishing).
-
-## Repository Layout
-
-- `SKILL.md` - community skill specification.
-- `scripts/parse_mail.py` - parser for `mail ...` commands.
-- `scripts/run_cli.sh` - safe wrapper for `gmail-rag` CLI execution.
-- `references/` - setup, commands, security, troubleshooting notes.
-- `docs/RELEASE_CHECKLIST.md` - pre-publish release checklist.
-
-## License
-
-MIT. See `LICENSE`.
+- `GMAIL_RAG_REPO` should point to this repo.
+- `uv` is the preferred runner.
+- If semantic/hybrid search is empty, run `mail sync` first.

@@ -4,11 +4,25 @@
 
 Input must start with `mail` (case-insensitive) to be parsed by this skill.
 
-## Search syntax
+## Quick syntax
 
 ```text
 mail <query> [keyword|semantic|hybrid] [max N|top N|limit N|limite N] [label <prefix>|tag <prefix>] [after <date>] [before <date>] [between <date> and <date>] [resume]
 ```
+
+## Useful examples
+
+```text
+mail invoice max 5
+mail on-demand cargo label finance/receivables
+mail crew roster between 2025-01 and 2025-03 resume
+mail recents top 10
+mail status
+mail labels
+mail sync
+```
+
+## Date formats
 
 Accepted date formats:
 

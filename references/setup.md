@@ -2,14 +2,14 @@
 
 ## 1) Required components
 
-- Local `gmail-rag` checkout.
+- Local ClawInboxRAG checkout.
 - Python + `uv`.
 - Gmail OAuth token with read-only scope.
 
 ## 2) Environment variables
 
 ```bash
-export GMAIL_RAG_REPO="/absolute/path/to/gmail-rag"
+export GMAIL_RAG_REPO="/absolute/path/to/claw-inbox-rag"
 export GMAIL_RAG_UV_BIN="uv"
 export MAIL_DEFAULT_MODE="hybrid"
 export MAIL_DEFAULT_LIMIT="5"
