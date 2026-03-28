@@ -1,6 +1,6 @@
 # ClawInboxRAG
 
-ClawInboxRAG is the single repo for the local Gmail RAG system and its community skill wrapper.
+ClawInboxRAG is the local Gmail RAG system and its community skill wrapper, packaged for OpenClaw fans who want a single, readable repo.
 
 It provides:
 - the `gmail-rag` engine (ingest, embed, search)
@@ -8,18 +8,21 @@ It provides:
 - safe, read-only mailbox retrieval defaults
 - docs, tests, and operational scripts in one place
 
-## Value Proposition
+## Why this repo exists
 
-- Fast mailbox retrieval from chat-style commands.
-- Portable skill design with minimal environment assumptions.
-- Safety-first execution: read-only Gmail scope, command allowlist, bounded results.
-- Works with keyword, semantic, or hybrid retrieval modes.
+This repo intentionally combines the engine and the skill so there is one source of truth for:
+- command behavior
+- safety rules
+- tests
+- docs
+- release history
 
-## Repository Layout
+## What’s inside
 
 - `gmail_rag/` — core engine and CLI code
 - `clawinboxrag/` — skill adapter and parity harness
-- `scripts/` — helper scripts for the chat wrapper and CLI
+- `scripts/` — active wrapper scripts
+- `packages/gmail-rag-legacy/` — preserved legacy Gmail RAG snapshot
 - `tests/` — automated tests
 - `references/` — setup, commands, security, troubleshooting notes
 - `docs/` — migration and validation docs
