@@ -1,11 +1,11 @@
 ---
 name: ClawInboxRAG
-description: Community skill for parsing and executing local mailbox retrieval commands (`mail ...`) against a local gmail-rag CLI with safe defaults, bounded output, and read-only constraints.
+description: Community skill for parsing and executing local mailbox retrieval commands (`mail ...`) against the local ClawInboxRAG repo with safe defaults, bounded output, and read-only constraints.
 ---
 
 # ClawInboxRAG (Community Skill)
 
-Parse and execute `mail ...` commands for a local `gmail-rag` environment.
+Parse and execute `mail ...` commands for the local ClawInboxRAG repo.
 
 ## What this skill does
 
@@ -16,7 +16,7 @@ Parse and execute `mail ...` commands for a local `gmail-rag` environment.
 
 ## Prerequisites
 
-- Local `gmail-rag` checkout.
+- Local ClawInboxRAG checkout.
 - Working Python environment and `uv` runner.
 - Gmail OAuth read-only scope.
 - Environment variables:
