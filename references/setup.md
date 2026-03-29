@@ -23,9 +23,11 @@ export MAIL_MAX_LIMIT="25"
 ## 3) Basic health checks
 
 ```bash
-scripts/run_cli.sh status
-scripts/run_cli.sh labels
+GMAIL_RAG_REPO=/absolute/path/to/claw-inbox-rag scripts/run_cli.sh status
+GMAIL_RAG_REPO=/absolute/path/to/claw-inbox-rag scripts/run_cli.sh labels
 python3 scripts/parse_mail.py "mail invoices max 3"
 ```
+
+`status` reports local DB/index/token health and table counts for messages, labels, message_labels, attachments, chunks, and chunk_embeddings.
 
 If semantic/hybrid retrieval is expected, ensure embeddings/index exist.

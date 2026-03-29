@@ -59,10 +59,12 @@ export GMAIL_TOKEN_PATH="$HOME/.openclaw/gmail/token.json"
 ### 4) Smoke test the wrapper
 
 ```bash
-scripts/run_cli.sh status
-scripts/run_cli.sh labels
+GMAIL_RAG_REPO=/absolute/path/to/your/local/gmail-backend scripts/run_cli.sh status
+GMAIL_RAG_REPO=/absolute/path/to/your/local/gmail-backend scripts/run_cli.sh labels
 python3 scripts/parse_mail.py "mail invoices max 3"
 ```
+
+`status` reports the local database/index/token health plus counts for messages, labels, attachments, chunks, and embeddings.
 
 ## Command language
 
