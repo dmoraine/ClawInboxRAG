@@ -39,5 +39,24 @@ case "$subcommand" in
     ;;
 esac
 
+if [[ "$subcommand" == "status" ]]; then
+  exec "$GMAIL_RAG_UV_BIN" run python - <<'PY'
+from pathlib import Path
+import json
+from gmail_rag.config import Paths
+from clawinboxrag import LegacyGmailRagAdapter
+
+p = Paths()
+summary = {
+    "base": str(p.base),
+    "db_exists": p.db_path.exists(),
+    "index_exists": p.faiss_index_path.exists(),
+    "meta_exists": p.faiss_meta_path.exists(),
+    "token_exists": p.gmail_token_path.exists(),
+}
+print(json.dumps(summary, ensure_ascii=False))
+PY
+fi
+
 cd "$GMAIL_RAG_REPO"
 exec "$GMAIL_RAG_UV_BIN" run python -m gmail_rag.cli "$@"
