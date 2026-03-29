@@ -1,42 +1,67 @@
 # ClawInboxRAG
 
-**Local Gmail RAG + `mail ...` skill wrapper in one repo.**
+**Community skill for local Gmail retrieval, published as a GitHub repo with installation instructions.**
 
-ClawInboxRAG is the home for the local Gmail retrieval system used by OpenClaw fans.
-It combines the retrieval engine, the chat-friendly skill layer, tests, docs, and operational scripts.
+This repository is the public-facing home for the `mail ...` community skill that wraps a local Gmail RAG backend.
+It focuses on:
+- safe, read-only mailbox retrieval
+- clear command parsing
+- concise results with citations/permalinks
+- simple GitHub-based installation
 
-## What you get
+## What this repo contains
 
-- `gmail_rag/` — ingest, embed, search
-- `clawinboxrag/` — skill adapter and parity harness
-- `scripts/` — active wrapper scripts
-- `packages/gmail-rag-legacy/` — archived legacy snapshot
-- `tests/` — regression coverage
+- `SKILL.md` — skill definition
+- `scripts/parse_mail.py` — command parser
+- `scripts/run_cli.sh` — safe CLI wrapper
 - `references/` — setup, commands, security, troubleshooting
+- `docs/` — release notes and validation docs
+- `packages/gmail-rag-legacy/` — preserved legacy snapshot for maintainers
 
-## Why this repo exists
+## What it does not aim to be
 
-- One source of truth for behavior and safety
-- Read-only Gmail posture by default
-- `mail ...` command language for chat surfaces
-- Hybrid search with keyword + semantic retrieval
-- Easy to browse, test, and extend
+- not a public Gmail API client
+- not a send/delete tool
+- not a replacement for your own local backend installation
 
-## Quick start
+## Installation
+
+### 1) Clone the repo
+
+```bash
+git clone https://github.com/dmoraine/ClawInboxRAG.git
+cd ClawInboxRAG
+```
+
+### 2) Install Python dependencies
 
 ```bash
 uv sync --extra dev
-export GMAIL_RAG_REPO="/absolute/path/to/claw-inbox-rag"
+```
+
+If you only need the skill wrapper, install the runtime dependencies without dev extras:
+
+```bash
+uv sync
+```
+
+### 3) Configure the local backend path
+
+```bash
+export GMAIL_RAG_REPO="/absolute/path/to/your/local/gmail-backend"
 export GMAIL_RAG_UV_BIN="uv"
 export GMAIL_RAG_BASE="$HOME/.openclaw/gmail-rag"
 export GMAIL_TOKEN_PATH="$HOME/.openclaw/gmail/token.json"
-export MAIL_DEFAULT_MODE="hybrid"
-export MAIL_DEFAULT_LIMIT="5"
-export MAIL_MAX_LIMIT="25"
+```
 
+> `GMAIL_RAG_REPO` must point to your **local backend checkout**. This repo only provides the skill/wrapper layer.
+
+### 4) Smoke test the wrapper
+
+```bash
 scripts/run_cli.sh status
 scripts/run_cli.sh labels
-scripts/run_cli.sh search "invoice" --hybrid --limit 5
+python3 scripts/parse_mail.py "mail invoices max 3"
 ```
 
 ## Command language
@@ -57,9 +82,9 @@ mail labels
 mail sync
 ```
 
-## Read-only safety
+## Safety model
 
-- Gmail access stays read-only.
+- Read-only Gmail access only.
 - No send/delete operations in this skill.
 - Result counts are clamped.
 - Tokens and secrets stay out of the repo.
@@ -67,25 +92,22 @@ mail sync
 
 ## Configuration
 
-The default data root is configurable and no longer hardcoded.
-
-- `GMAIL_RAG_BASE` — base data directory, defaults to `~/.openclaw/gmail-rag`
-- `GMAIL_TOKEN_PATH` — Gmail OAuth token path, defaults to `~/.openclaw/gmail/token.json`
-- `GMAIL_RAG_REPO` — path to this repo
+- `GMAIL_RAG_REPO` — path to your local backend checkout
 - `GMAIL_RAG_UV_BIN` — runner binary, defaults to `uv`
+- `GMAIL_RAG_BASE` — backend data directory
+- `GMAIL_TOKEN_PATH` — Gmail OAuth token path
+- `MAIL_DEFAULT_MODE` — default search mode (`hybrid` by default)
+- `MAIL_DEFAULT_LIMIT` — default result count (`5` by default)
+- `MAIL_MAX_LIMIT` — max result count (`25` by default)
 
-## Repository layout
+## References
 
-- `gmail_rag/` — core engine and CLI code
-- `clawinboxrag/` — skill adapter and parity harness
-- `scripts/` — helper scripts
-- `packages/gmail-rag-legacy/` — preserved legacy Gmail RAG snapshot
-- `tests/` — automated tests
-- `references/` — setup, commands, security, troubleshooting notes
-- `docs/` — migration and validation docs
+- `SKILL.md`
+- `references/setup.md`
+- `references/commands.md`
+- `references/security.md`
+- `references/troubleshooting.md`
 
-## Compatibility notes
+## Notes for maintainers
 
-- `GMAIL_RAG_REPO` should point to this repo.
-- `uv` is the preferred runner.
-- If semantic/hybrid search is empty, run `mail sync` first.
+The code for the backend is intentionally kept in a separate local checkout. This repo is the skill publication and wrapper layer.
