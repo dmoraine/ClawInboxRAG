@@ -2,7 +2,7 @@
 
 ## `ERROR: GMAIL_RAG_REPO is not set`
 
-- Export `GMAIL_RAG_REPO` to your local `claw-inbox-rag` path.
+- Export `GMAIL_RAG_REPO` to your local `ClawInboxRAG` path.
 
 ## `ERROR: GMAIL_RAG_REPO does not exist`
 
@@ -15,7 +15,7 @@
 ## `ModuleNotFoundError: gmail_rag`
 
 - Check repository path and environment setup.
-- Confirm CLI runs in the configured `claw-inbox-rag` checkout.
+- Confirm CLI runs in the configured `ClawInboxRAG` checkout.
 
 ## OAuth/auth failures
 

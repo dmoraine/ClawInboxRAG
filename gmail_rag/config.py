@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
 
 @dataclass(frozen=True)
 class Paths:
-    base: Path = Path("/home/openclaw/.openclaw/gmail-rag")
+    base: Path = Path(os.getenv("GMAIL_RAG_BASE", Path.home() / ".openclaw" / "gmail-rag"))
 
     @property
     def db_path(self) -> Path:
@@ -30,7 +31,7 @@ class Paths:
 
     @property
     def gmail_token_path(self) -> Path:
-        return Path("/home/openclaw/.openclaw/gmail/token.json")
+        return Path(os.getenv("GMAIL_TOKEN_PATH", Path.home() / ".openclaw" / "gmail" / "token.json"))
 
 
 DEFAULT_EMBED_MODEL = "intfloat/multilingual-e5-base"

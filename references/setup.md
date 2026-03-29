@@ -11,6 +11,8 @@
 ```bash
 export GMAIL_RAG_REPO="/absolute/path/to/claw-inbox-rag"
 export GMAIL_RAG_UV_BIN="uv"
+export GMAIL_RAG_BASE="$HOME/.openclaw/gmail-rag"
+export GMAIL_TOKEN_PATH="$HOME/.openclaw/gmail/token.json"
 export MAIL_DEFAULT_MODE="hybrid"
 export MAIL_DEFAULT_LIMIT="5"
 export MAIL_MAX_LIMIT="25"

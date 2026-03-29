@@ -28,6 +28,8 @@ It combines the retrieval engine, the chat-friendly skill layer, tests, docs, an
 uv sync --extra dev
 export GMAIL_RAG_REPO="/absolute/path/to/claw-inbox-rag"
 export GMAIL_RAG_UV_BIN="uv"
+export GMAIL_RAG_BASE="$HOME/.openclaw/gmail-rag"
+export GMAIL_TOKEN_PATH="$HOME/.openclaw/gmail/token.json"
 export MAIL_DEFAULT_MODE="hybrid"
 export MAIL_DEFAULT_LIMIT="5"
 export MAIL_MAX_LIMIT="25"
@@ -62,6 +64,15 @@ mail sync
 - Result counts are clamped.
 - Tokens and secrets stay out of the repo.
 - Wrapper commands are allowlisted.
+
+## Configuration
+
+The default data root is configurable and no longer hardcoded.
+
+- `GMAIL_RAG_BASE` — base data directory, defaults to `~/.openclaw/gmail-rag`
+- `GMAIL_TOKEN_PATH` — Gmail OAuth token path, defaults to `~/.openclaw/gmail/token.json`
+- `GMAIL_RAG_REPO` — path to this repo
+- `GMAIL_RAG_UV_BIN` — runner binary, defaults to `uv`
 
 ## Repository layout
 
