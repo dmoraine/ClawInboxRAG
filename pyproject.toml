@@ -2,7 +2,7 @@
 name = "claw-inbox-rag"
 version = "0.1.0"
 description = "ClawInboxRAG: local Gmail RAG engine plus community skill wrapper"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = [
     "beautifulsoup4>=4.14.3",
     "faiss-cpu>=1.13.2",
@@ -13,6 +13,7 @@ dependencies = [
     "pydantic>=2.12.5",
     "python-docx>=1.2.0",
     "sentence-transformers>=5.2.2",
+    "torch>=2.10,<2.11",
     "tqdm>=4.67.3",
 ]
 
@@ -21,3 +22,11 @@ dev = ["pytest>=8.4.0"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
