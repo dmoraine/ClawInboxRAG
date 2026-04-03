@@ -1,8 +1,8 @@
 # ClawInboxRAG
 
-**Community skill for local Gmail retrieval, published as a GitHub repo with installation instructions.**
+**Community skill and local wrapper for Gmail retrieval, published as a GitHub repo with installation instructions.**
 
-This repository is the public-facing home for the `mail ...` community skill that wraps a local Gmail RAG backend.
+This repository is the public-facing home for the `mail ...` community skill and the local wrapper it uses to run `gmail_rag.cli`.
 It focuses on:
 - safe, read-only mailbox retrieval
 - clear command parsing
@@ -22,7 +22,7 @@ It focuses on:
 
 - not a public Gmail API client
 - not a send/delete tool
-- not a replacement for your own local backend installation
+- not a hosted Gmail service
 
 ## Installation
 
@@ -54,17 +54,23 @@ export GMAIL_RAG_BASE="$HOME/.openclaw/gmail-rag"
 export GMAIL_TOKEN_PATH="$HOME/.openclaw/gmail/token.json"
 ```
 
-> `GMAIL_RAG_REPO` must point to your **local backend checkout**. This repo only provides the skill/wrapper layer.
+> `GMAIL_RAG_REPO` must point to a checkout that exposes `python -m gmail_rag.cli`. That can be this repo or another compatible local backend checkout.
 
 ### 4) Smoke test the wrapper
 
 ```bash
 GMAIL_RAG_REPO=/absolute/path/to/your/local/gmail-backend scripts/run_cli.sh status
-GMAIL_RAG_REPO=/absolute/path/to/your/local/gmail-backend scripts/run_cli.sh labels
 python3 scripts/parse_mail.py "mail invoices max 3"
 ```
 
 `status` reports the local database/index/token health plus counts for messages, labels, attachments, chunks, and embeddings.
+
+If the configured backend exposes passthrough operational commands, these checks may also be useful:
+
+```bash
+GMAIL_RAG_REPO=/absolute/path/to/your/local/gmail-backend scripts/run_cli.sh labels
+GMAIL_RAG_REPO=/absolute/path/to/your/local/gmail-backend scripts/run_cli.sh recents --limit 5
+```
 
 ## Command language
 
@@ -78,11 +84,11 @@ Examples:
 mail conference
 mail budget review keyword max 8
 mail invoices label finance/receivables between 2025-01 and 2025-03 resume
-mail recents top 10
 mail status
-mail labels
 mail sync
 ```
+
+`mail labels` and `mail recents` are parser-recognized passthrough commands. Document them as available only when the configured backend checkout exposes matching CLI subcommands.
 
 ## Safety model
 
@@ -112,4 +118,4 @@ mail sync
 
 ## Notes for maintainers
 
-The code for the backend is intentionally kept in a separate local checkout. This repo is the skill publication and wrapper layer.
+The skill and wrapper live in this repo. The runtime target is whichever local checkout `GMAIL_RAG_REPO` points at, as long as it exposes `gmail_rag.cli`.
