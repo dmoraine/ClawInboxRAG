@@ -1,8 +1,6 @@
-# Commands
+# ClawInboxRAG commands
 
-## Trigger
-
-Input must start with `mail` (case-insensitive) to be parsed by this skill.
+Input must start with `mail` (case-insensitive).
 
 ## Quick syntax
 
@@ -10,19 +8,32 @@ Input must start with `mail` (case-insensitive) to be parsed by this skill.
 mail <query> [keyword|semantic|hybrid] [max N|top N|limit N|limite N] [label <prefix>|tag <prefix>] [after <date>] [before <date>] [between <date> and <date>] [resume]
 ```
 
-## Useful examples
+## Supported parser actions
 
-```text
-mail invoice max 5
-mail on-demand cargo label finance/receivables
-mail crew roster between 2025-01 and 2025-03 resume
-mail recents top 10
-mail status
-mail labels
-mail sync
-```
+- `mail help`
+- `mail status`
+- `mail sync`
+- `mail labels`
+- `mail recents`
+- `mail <query>`
 
-## Date formats
+`mail labels` and `mail recents` should be documented as passthrough commands only when the configured backend checkout exposes matching CLI subcommands.
+
+## Search behavior
+
+Defaults come from:
+
+- `MAIL_DEFAULT_MODE`
+- `MAIL_DEFAULT_LIMIT`
+- `MAIL_MAX_LIMIT`
+
+Recognized modifiers:
+
+- mode: `keyword`, `fts`, `semantic`, `semantique`, `sémantique`, `hybrid`, `mix`, `fusion`
+- limit: `max`, `top`, `limit`, `limite`
+- label filter: `label`, `tag`
+- summary hint: `resume`, `résume`, `résumé`, `summary`
+- date filters: `after`, `before`, `between ... and ...`
 
 Accepted date formats:
 
@@ -31,35 +42,43 @@ Accepted date formats:
 - `YYYY-MM`
 - `YYYY-MM-DD`
 
-`between` converts to `after` + exclusive `before` bounds:
+`between` is converted to `after` plus an exclusive `before` bound:
 
 - `between 2025 and 2025` -> `after=2025-01-01`, `before=2026-01-01`
 - `between 2025-02 and 2025-03` -> `after=2025-02-01`, `before=2025-04-01`
 
-## Operational commands
+## CLI mapping
 
-- `mail help`
-- `mail recents [max N|top N|limit N|limite N]`
-- `mail status` (`mail stat` also accepted)
-- `mail labels` (`mail label` also accepted)
-- `mail sync`
+The wrapper uses `scripts/run_cli.sh`.
 
-## Sender/recipient operators
-
-Dedicated parser flags `from` and `to` are not implemented.
-
-Use backend query operators inside `<query>` when available, e.g.:
+Search maps to:
 
 ```text
-mail from:alice@example.com to:me subject:contract max 5
+search <query> --limit N [--label <prefix>] [--after <date>] [--before <date>]
 ```
 
-## Output style
+Mode handling:
 
-For search results, include:
+- keyword: no extra flag
+- semantic: add `--semantic`
+- hybrid: add `--hybrid`
 
-1. Date
-2. Sender
-3. Subject
-4. Short snippet
-5. Stable reference/permalink (if available)
+Conservative sync sequence:
+
+1. `ingest-primary --limit 50`
+2. `embed --limit 200`
+3. `refresh-labels`
+
+## Output expectations
+
+For search results:
+
+- concise result blocks
+- `date | from | subject`
+- short excerpts only
+- stable Gmail links when available
+
+For operational output:
+
+- short human-readable summaries
+- no raw dumps unless explicitly requested

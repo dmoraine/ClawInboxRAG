@@ -1,51 +1,71 @@
 ---
-name: ClawInboxRAG
-description: Community skill for parsing and executing local mailbox retrieval commands (`mail ...`) against the local ClawInboxRAG repo with safe defaults, bounded output, and read-only constraints.
+name: claw-inbox-rag
+description: ClawInboxRAG community skill for querying a local Gmail RAG system through natural-language `mail ...` commands. Use when the user asks mailbox retrieval/search/sync via `mail ...` with safe filters and concise output. Do not use it for sending mail or modifying mailbox state.
 ---
 
 # ClawInboxRAG (Community Skill)
 
-Parse and execute `mail ...` commands for the local ClawInboxRAG repo.
+> Parse and execute `mail ...` commands against a local Gmail RAG installation with safe defaults, bounded output, and a read-only posture.
 
-## What this skill does
+## Overview
 
-- Parses chat commands with `scripts/parse_mail.py`.
-- Routes allowed actions to `scripts/run_cli.sh`.
-- Keeps output concise and citation-friendly.
-- Enforces safety constraints (read-only posture, limited command surface, bounded result counts).
+This skill provides a portable command language for mailbox retrieval workflows backed by a local Gmail RAG stack.
+
+Supported parser actions:
+
+- Search commands: `mail <query> ...`
+- Operational commands: `mail help`, `mail status`, `mail sync`
+- Parser-recognized passthrough commands: `mail labels`, `mail recents`
+- Filters: `after`, `before`, `between ... and ...`, `label`, `tag`
+- Output hint: `resume`
+
+Design constraints:
+
+- Keep Gmail access read-only
+- Return short excerpts, not full raw message bodies
+- Avoid hardcoded local paths or user-specific assumptions
 
 ## Prerequisites
 
-- Local ClawInboxRAG checkout.
-- Working Python environment and `uv` runner.
-- Gmail OAuth read-only scope.
-- Environment variables:
-  - `GMAIL_RAG_REPO` (required)
-  - `GMAIL_RAG_UV_BIN` (optional, default `uv`)
-  - `MAIL_DEFAULT_MODE` (`hybrid` default)
-  - `MAIL_DEFAULT_LIMIT` (`5` default)
-  - `MAIL_MAX_LIMIT` (`25` default)
+- A working local Gmail RAG checkout referenced by `GMAIL_RAG_REPO`
+- A Python runner such as `uv`
+- A valid Gmail OAuth token with read-only scope
+- Local data under `GMAIL_RAG_BASE` for search/status operations
+- A FAISS index if semantic or hybrid search is expected
 
-## Supported input
+## OAuth and local setup
 
-Trigger: input starts with `mail` (case-insensitive).
+The skill expects an existing local Gmail OAuth token with read-only scope.
 
-Actions recognized by parser:
+Setup points to document clearly:
 
-- `mail help` -> `help`
-- `mail status` / `mail stat` -> `status`
-- `mail labels` / `mail label` -> `labels`
-- `mail sync` -> `sync`
-- `mail recents [max|top|limit N]` -> `recents`
-- everything else -> `search` (if non-empty query remains)
+1. Enable the Gmail API in the Google Cloud project used for the local backend.
+2. Configure OAuth consent and create client credentials for the local workflow.
+3. Authorize only read-only Gmail scope.
+4. Store the token at the path expected by the backend, usually via `GMAIL_TOKEN_PATH`.
+5. Verify with a read-only command such as `mail status` or a small search.
 
-Search options recognized by parser:
+If a valid local token already exists, the agent should use it rather than re-running setup.
 
-- Mode: `keyword`, `semantic`, `hybrid` (plus localized aliases in parser)
-- Limit: `max N`, `top N`, `limit N`, `limite N`
-- Label prefix: `label <prefix>` or `tag <prefix>`
-- Date filters: `after <date>`, `before <date>`, `between <date> and <date>`
-- Summary flag: `resume` (also `résume`, `résumé`, `summary`)
+## Configuration
+
+Environment variables used by this skill and wrapper:
+
+- `GMAIL_RAG_REPO` - absolute path to the backend checkout
+- `GMAIL_RAG_UV_BIN` - runner command, default `uv`
+- `GMAIL_RAG_BASE` - local data directory, default `~/.openclaw/gmail-rag`
+- `GMAIL_TOKEN_PATH` - Gmail OAuth token path, default `~/.openclaw/gmail/token.json`
+- `MAIL_DEFAULT_MODE` - `hybrid`, `keyword`, or `semantic`
+- `MAIL_DEFAULT_LIMIT` - default top-N result count, default `5`
+- `MAIL_MAX_LIMIT` - hard max top-N result count, default `25`
+
+## Instructions
+
+### Step 1: Parse commands safely
+
+- Trigger only when the input starts with `mail` (case-insensitive).
+- Parse actions and options with `scripts/parse_mail.py`.
+- Return help guidance when the command is empty or malformed.
 
 Accepted date formats:
 
@@ -54,82 +74,100 @@ Accepted date formats:
 - `YYYY-MM`
 - `YYYY-MM-DD`
 
-`between` behavior:
+Recognized aliases:
 
-- Year upper bound becomes first day of next year.
-- Month upper bound becomes first day of next month.
-- Day upper bound is next day (exclusive `before`).
+- Modes: `keyword`, `fts`, `semantic`, `semantique`, `sémantique`, `hybrid`, `mix`, `fusion`
+- Limit: `max`, `top`, `limit`, `limite`
+- Label filter: `label`, `tag`
+- Summary hint: `resume`, `résume`, `résumé`, `summary`
 
-## Command mapping
+### Step 2: Map parser actions to wrapper/backend commands
 
-Use `scripts/run_cli.sh` for execution.
+Use `scripts/run_cli.sh` as the command wrapper.
 
-- `help` -> return usage guidance (no CLI call required).
-- `search` -> `search <query> [--keyword|--semantic|--hybrid] --limit N [--label-prefix X] [--after ISO] [--before ISO]`
-- `recents` -> `recents --limit N`
-- `status` -> `status`
-- `labels` -> `labels`
+Action map:
+
+- `help` -> print usage examples
+- `status` -> wrapper status command
+- `search` -> `search <query> --limit N [--label <label>] [--after <iso>] [--before <iso>]` plus:
+  - no extra flag for keyword mode
+  - `--semantic` for semantic mode
+  - `--hybrid` for hybrid mode
 - `sync` -> run in order:
   1. `ingest-primary --limit 50`
   2. `embed --limit 200`
   3. `refresh-labels`
+- `labels` and `recents` -> only document them as passthrough operations when the configured backend actually exposes those subcommands
 
-Allowed CLI subcommands in wrapper:
+### Step 3: Handle degraded modes and errors
 
-- `search`
-- `recents`
-- `status`
-- `labels`
-- `ingest-primary`
-- `embed`
-- `refresh-labels`
+- If semantic or hybrid search is requested but the FAISS index is missing, explain the next step (`mail sync` or `embed`) and optionally fall back to keyword mode.
+- If `GMAIL_RAG_REPO`, runner, token, or local data are missing, return setup-oriented diagnostics.
+- For CLI failures, explain what failed and which local prerequisite to check.
 
-## Sender and recipient filters
+### Step 4: Format responses for chat channels
 
-Parser-level flags `from` and `to` are **not** implemented.
+For search:
 
-If backend supports query operators, include them in free-text query, for example:
+- Return concise numbered or clearly separated results
+- Include `date | from | subject`
+- Include a stable Gmail permalink when available
+- Keep excerpts short
+- If `resume` is requested, add a brief per-result summary
 
-```text
-mail from:alice@example.com to:me subject:invoice max 5
-```
+For operations:
 
-Those tokens remain part of `query` and are passed through to backend search.
+- Keep output human-readable and compact
+- Avoid raw machine dumps unless the user asks for them
 
-## Output expectations
+## Examples
 
-For search results, return concise entries with:
+### Example 1: Default search
 
-- `date | from | subject`
-- Short snippet
-- Stable reference/permalink when available
-- Optional per-item 1-2 line summary if `resume` requested
+User: `mail conference`
 
-For `status`, `labels`, `recents`, `sync`:
+Expected behavior:
 
-- Keep output compact and actionable.
-- Prefer summaries over raw dumps unless explicitly requested.
+- Parse as search with default mode and default limit
+- Execute the wrapper-backed search
+- Return concise results with references when available
 
-## Safety constraints
+### Example 2: Date and label filters
 
-- Read-only Gmail posture.
-- No credential/token disclosure.
-- No full raw body dumping by default.
-- Clamp numeric limits to configured max.
-- Validate date parsing before CLI options.
-- Use safe argument passing; do not interpolate untrusted shell strings.
+User: `mail conference March label business/external between 12/2025 and 02/2026 max 10 resume`
 
-## Error handling
+Expected behavior:
 
-- Missing `GMAIL_RAG_REPO` or bad path: return setup guidance.
-- Missing runner (`uv`): return runner/path fix.
-- Missing vector index for semantic/hybrid: suggest `mail sync` or fallback mode.
-- Malformed/empty command: return `mail help` usage.
+- Convert `between` into ISO `after` and exclusive `before` bounds
+- Apply the label prefix filter
+- Return up to 10 concise results
+
+### Example 3: Maintenance
+
+User: `mail sync`
+
+Expected behavior:
+
+- Run the conservative maintenance sequence
+- Return a compact summary of each step
+
+## Troubleshooting
+
+- `GMAIL_RAG_REPO` missing or invalid: verify the backend checkout path.
+- Runner missing: install `uv` or point `GMAIL_RAG_UV_BIN` to the correct executable.
+- Token/auth failure: verify the local token exists and uses Gmail read-only scope.
+- Semantic/hybrid failure: build or refresh embeddings/index before retrying.
+
+## Security Considerations
+
+- Require Gmail read-only scope for all mailbox operations.
+- Never print tokens, secrets, or full sensitive message bodies.
+- Clamp result counts and validate date input before execution.
+- Pass user input as separate arguments; do not interpolate raw shell strings.
 
 ## References
 
-- `README.md`
-- `references/setup.md`
-- `references/commands.md`
-- `references/security.md`
-- `references/troubleshooting.md`
+- Setup guide: `references/setup.md`
+- Command behavior: `references/commands.md`
+- Security guidance: `references/security.md`
+- Troubleshooting: `references/troubleshooting.md`

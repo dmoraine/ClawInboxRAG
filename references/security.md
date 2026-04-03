@@ -1,9 +1,32 @@
-# Security Guidance
+# ClawInboxRAG security guidance
 
-- Keep Gmail access read-only; do not add send/delete operations to this skill.
-- Do not expose OAuth credentials, refresh tokens, or local secret paths.
-- Do not return full message bodies by default; keep snippets short.
-- Clamp result count via `MAIL_MAX_LIMIT`.
-- Parse and normalize dates before passing to CLI.
-- Use argument-based invocation and allowlisted subcommands (`scripts/run_cli.sh`).
-- Reject unknown subcommands and malformed input safely.
+## Scope
+
+This skill is read-only by design.
+
+It must never:
+
+- send mail
+- delete mail
+- modify mailbox state
+- print OAuth tokens
+- print full sensitive message bodies
+
+## OAuth handling
+
+- Use read-only Gmail scope only
+- Keep tokens local
+- Do not paste secrets into responses
+- Redact any accidentally surfaced token values in user-facing text
+
+## Output hygiene
+
+- Return short excerpts
+- Clamp result counts
+- Validate date input before execution
+- Prefer stable links or citations over raw content dumps
+- Pass user input as separate arguments instead of interpolating shell strings
+
+## User privacy
+
+Return only the minimum mailbox content needed to answer the request.
